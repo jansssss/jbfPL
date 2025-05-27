@@ -1,12 +1,19 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import ProjectCard, { Project } from './ProjectCard';
 import Button from './Button';
+import { Link } from 'react-router-dom';
+import { supabase } from '../../lib/supabase'; // ✅ supabase import
 
 interface ProjectListProps {
   projects: Project[];
   isAdmin?: boolean;
   emptyMessage?: string;
+}
+
+interface User {
+  id: string;
+  name: string;
 }
 
 const ProjectList: FC<ProjectListProps> = ({ 
@@ -15,6 +22,22 @@ const ProjectList: FC<ProjectListProps> = ({
   emptyMessage = '프로젝트가 없습니다.'
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [users, setUsers] = useState<User[]>([]);
+
+  // ✅ users 테이블에서 id, name 조회
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const { data, error } = await supabase.from('users').select('id, name');
+      if (!error && data) setUsers(data);
+    };
+    fetchUsers();
+  }, []);
+
+  // applicant_id → name 변환
+  const getUserName = (id: string) => {
+    const user = users.find(u => u.id === id);
+    return user ? user.name : id;
+  };
 
   if (projects.length === 0) {
     return (
@@ -50,10 +73,11 @@ const ProjectList: FC<ProjectListProps> = ({
 
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
+          {projects.map((project, index) => (
             <ProjectCard
               key={project.id}
               project={project}
+              index={index}
               linkTo={isAdmin ? `/admin/approve/${project.id}` : `/project/${project.id}`}
               isAdmin={isAdmin}
             />
@@ -64,6 +88,9 @@ const ProjectList: FC<ProjectListProps> = ({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  신청번호
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   프로젝트명
                 </th>
@@ -87,14 +114,20 @@ const ProjectList: FC<ProjectListProps> = ({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {projects.map((project) => (
+              {projects.map((project, index) => (
                 <tr key={project.id} className="hover:bg-gray-50">
+                  {/* 신청번호: 01, 02, ... */}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{(index + 1).toString().padStart(2, '0')}</div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{project.name}</div>
                   </td>
                   {isAdmin && (
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{project.applicant}</div>
+                      <div className="text-sm text-gray-500">
+                        {getUserName(project.applicant_id)}
+                      </div>
                     </td>
                   )}
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -110,15 +143,17 @@ const ProjectList: FC<ProjectListProps> = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{project.createdAt}</div>
+                    <div className="text-sm text-gray-500">
+                      {project.created_at ? project.created_at.split('T')[0] : ''}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a 
-                      href={isAdmin ? `/admin/approve/${project.id}` : `/project/${project.id}`}
+                    <Link 
+                      to={isAdmin ? `/admin/approve/${project.id}` : `/project/${project.id}`}
                       className="text-blue-600 hover:text-blue-900"
                     >
                       {isAdmin ? '검토하기' : '상세보기'} →
-                    </a>
+                    </Link>
                   </td>
                 </tr>
               ))}
