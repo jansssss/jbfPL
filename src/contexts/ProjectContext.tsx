@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 // 실제 Project 타입 정의는 lib/supabase 혹은 여기에서 프로젝트 스키마와 일치하게 정의
 export interface Project {
   id: string;
+  no: number; // 👈 이 줄 추가! (no 컬럼이 숫자라면 number, 문자열이면 string
   name: string;
   description: string;
   members: string;
