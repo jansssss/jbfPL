@@ -24,7 +24,6 @@ const ProjectApproval = () => {
         setProject(projectData);
         setApprovedLevel(projectData.level);
       } else {
-        // Project not found
         if (window.showToast) {
           window.showToast('프로젝트를 찾을 수 없습니다.', 'error');
         }
@@ -41,22 +40,19 @@ const ProjectApproval = () => {
     setFeedback(e.target.value);
   };
 
+  // 승인
   const handleApprove = async () => {
     if (!id) return;
-    
     setIsSubmitting(true);
-    
     try {
-      updateProject(id, {
+      await updateProject(id, {
         status: '승인됨',
         level: approvedLevel,
         feedback: feedback || '승인되었습니다.',
       });
-      
       if (window.showToast) {
         window.showToast('프로젝트가 성공적으로 승인되었습니다.', 'success');
       }
-      
       navigate('/admin');
     } catch (error) {
       console.error('Error approving project', error);
@@ -68,6 +64,7 @@ const ProjectApproval = () => {
     }
   };
 
+  // 반려
   const handleReject = async () => {
     if (!id || !feedback.trim()) {
       if (window.showToast) {
@@ -75,19 +72,15 @@ const ProjectApproval = () => {
       }
       return;
     }
-    
     setIsSubmitting(true);
-    
     try {
-      updateProject(id, {
+      await updateProject(id, {
         status: '거절됨',
         feedback,
       });
-      
       if (window.showToast) {
         window.showToast('프로젝트가 반려되었습니다.', 'info');
       }
-      
       navigate('/admin');
     } catch (error) {
       console.error('Error rejecting project', error);
@@ -109,14 +102,10 @@ const ProjectApproval = () => {
 
   const getLevelVariant = (level: string) => {
     switch (level) {
-      case 'S':
-        return 'info';
-      case 'A':
-        return 'success';
-      case 'B':
-        return 'default';
-      default:
-        return 'default';
+      case 'S': return 'info';
+      case 'A': return 'success';
+      case 'B': return 'default';
+      default: return 'default';
     }
   };
 
@@ -154,27 +143,23 @@ const ProjectApproval = () => {
               <h3 className="text-sm font-medium text-gray-500 mb-1">프로젝트 설명</h3>
               <p className="text-gray-900">{project.description}</p>
             </div>
-            
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-1">구성원</h3>
               <p className="text-gray-900">{project.members}</p>
             </div>
           </div>
-          
           <div>
             <h3 className="text-sm font-medium text-gray-500 mb-1">주요내용 및 추진전략</h3>
             <div className="bg-gray-50 p-4 rounded-md text-gray-900">
               {project.strategy}
             </div>
           </div>
-          
           <div>
             <h3 className="text-sm font-medium text-gray-500 mb-1">성과평가 목표</h3>
             <div className="bg-gray-50 p-4 rounded-md text-gray-900">
               {project.goal}
             </div>
           </div>
-          
           {project.notes && (
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-1">기타 요청사항</h3>
@@ -183,10 +168,8 @@ const ProjectApproval = () => {
               </div>
             </div>
           )}
-          
           <div className="border-t border-gray-200 pt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">승인 결정</h3>
-            
             <SelectField
               label="승인 등급 조정"
               name="level"
@@ -198,7 +181,6 @@ const ProjectApproval = () => {
               <option value="A">A 등급 (주요 프로젝트)</option>
               <option value="B">B 등급 (일반 프로젝트)</option>
             </SelectField>
-            
             <TextareaField
               label="피드백 또는 반려 사유"
               name="feedback"
@@ -218,7 +200,6 @@ const ProjectApproval = () => {
           >
             취소
           </Button>
-          
           <div className="flex space-x-3">
             <Button
               variant="danger"
@@ -229,7 +210,6 @@ const ProjectApproval = () => {
             >
               반려
             </Button>
-            
             <Button
               variant="primary"
               onClick={handleApprove}
