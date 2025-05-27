@@ -59,7 +59,6 @@ const Layout = () => {
             </div>
             
             <nav className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-              {/* ✅ 관리자 모드 전환 버튼: level 3만 노출 */}
               {canAccessAdmin && (
                 isAdminPath ? (
                   <Link 
@@ -77,7 +76,6 @@ const Layout = () => {
                   </Link>
                 )
               )}
-              {/* 항상 이름과 로그아웃 버튼 노출 */}
               <span className="font-semibold mr-2">{user?.name} 님</span>
               <button
                 onClick={handleSignOut}
@@ -105,7 +103,6 @@ const Layout = () => {
         {isMobileMenuOpen && (
           <div className="sm:hidden">
             <div className="pt-2 pb-3 space-y-1">
-              {/* ✅ 모바일 메뉴에도 level 3만 노출 */}
               {canAccessAdmin && (
                 isAdminPath ? (
                   <Link 
@@ -210,18 +207,18 @@ const Layout = () => {
                     }`}
                   >
                     <ClipboardList className="mr-3 h-5 w-5" />
-                    프로젝트 신청
+                    프로젝트 등록
                   </Link>
                   <Link
-                    to="/my-tasks"
+                    to="/work/apply"
                     className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                      location.pathname === '/my-tasks'
+                      location.pathname === '/work/apply'
                         ? 'bg-gray-100 text-blue-600'
                         : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
                     }`}
                   >
                     <FilePlus className="mr-3 h-5 w-5" />
-                    내업무 등록
+                    내 업무계획 등록
                   </Link>
                 </>
               )}
