@@ -116,9 +116,10 @@ const ProjectList: FC<ProjectListProps> = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {projects.map((project, index) => (
                 <tr key={project.id} className="hover:bg-gray-50">
-                  {/* 신청번호: 01, 02, ... */}
+                  {/* 신청번호: 기존 순번에서 DB 실제 값으로 변경 */}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{(index + 1).toString().padStart(2, '0')}</div>
+                    <div className="text-sm text-gray-900">{project.no}</div> {/* ✅ 신청번호 실제 값 사용 */}
+                    {/* <div className="text-sm text-gray-900">{(index + 1).toString().padStart(2, '0')}</div>  기존 순번 사용(주석처리) */}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{project.name}</div>
