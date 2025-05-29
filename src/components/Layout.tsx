@@ -53,7 +53,7 @@ const Layout = () => {
                   className="text-blue-600 font-semibold text-lg flex items-center gap-2"
                 >
                   <ClipboardList className="h-6 w-6" />
-                  <span>jBF project</span>
+                  <span>jBF project management</span>
                 </Link>
               </div>
             </div>
