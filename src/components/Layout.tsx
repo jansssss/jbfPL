@@ -209,6 +209,7 @@ const Layout = () => {
                     <ClipboardList className="mr-3 h-5 w-5" />
                     프로젝트 등록
                   </Link>
+                </* 내업무등록 주석처리
                   <Link
                     to="/work/apply"
                     className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
@@ -220,6 +221,7 @@ const Layout = () => {
                     <FilePlus className="mr-3 h-5 w-5" />
                     내 업무계획 등록
                   </Link>
+                  */>
                 </>
               )}
             </nav>
