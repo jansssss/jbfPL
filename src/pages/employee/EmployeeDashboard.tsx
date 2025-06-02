@@ -176,21 +176,7 @@ const EmployeeDashboard = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-medium text-gray-900">내 프로젝트</h2>
-          <div>
-            <Button
-              size="sm"
-              variant={projectView === 'card' ? 'primary' : 'outline'}
-              onClick={() => setProjectView('card')}
-              className="mr-2"
-              icon={<LayoutGrid className="h-4 w-4" />}
-            >카드 보기</Button>
-            <Button
-              size="sm"
-              variant={projectView === 'list' ? 'primary' : 'outline'}
-              onClick={() => setProjectView('list')}
-              icon={<List className="h-4 w-4" />}
-            >목록 보기</Button>
-          </div>
+          {/* 카드/목록 보기 버튼 삭제됨 */}
         </div>
         <ProjectList
           projects={filteredProjects}
