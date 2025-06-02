@@ -14,6 +14,7 @@ export interface Project {
   level: string;
   notes: string;
   status: string;
+  feedback: string; // 👈 이 줄 추가!
   applicant_id: string;
   created_at?: string;
   updated_at?: string;
