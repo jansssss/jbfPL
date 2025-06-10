@@ -207,7 +207,7 @@ const Layout = () => {
                     }`}
                   >
                     <ClipboardList className="mr-3 h-5 w-5" />
-                    프로젝트 등록
+                    PL 프로젝트 등록
                   </Link>
                   <Link
                     to="/work/apply"
@@ -218,7 +218,7 @@ const Layout = () => {
                     }`}
                   >
                     <FilePlus className="mr-3 h-5 w-5" />
-                    내 업무계획 등록
+                    내 프로젝트 등록
                   </Link>
                 </>
               )}
