@@ -113,7 +113,7 @@ const EmployeeDashboard = () => {
         <div className="mt-4 flex md:ml-4 md:mt-0">
           <Link to="/apply">
             <Button variant="primary" icon={<PlusCircle className="h-4 w-4" />}>
-              프로젝트 등록
+              PL 등록
             </Button>
           </Link>
         </div>
