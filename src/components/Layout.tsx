@@ -207,7 +207,7 @@ const Layout = () => {
                     }`}
                   >
                     <ClipboardList className="mr-3 h-5 w-5" />
-                    PL 프로젝트 등록
+                    PL 등록
                   </Link>
                   <Link
                     to="/work/apply"
