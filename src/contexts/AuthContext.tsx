@@ -7,6 +7,8 @@ interface User {
   email: string;
   name: string;
   level: number;
+  center?: string;
+  team?: string;
   creat?: string;
   first?: boolean;
 }
@@ -15,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, center: string, team: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
@@ -68,11 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
       if (data.user) {
@@ -93,39 +91,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // 회원가입: supabase.auth → users 테이블 row 입력까지!
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    name: string,
+    center: string,
+    team: string
+  ) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
 
-      // 인증 성공하면 users 테이블에도 사용자 정보 입력
       if (data.user) {
         const { id, email } = data.user;
-        const { error: userInsertError } = await supabase
-          .from('users')
-          .insert([
-            {
-         id: userId,
-         email,
-         name,
-         center,
-         team,
-         level: 1,
-         creat: new Date().toISOString(),
-         first: true,                   // 첫 로그인 여부(기본 true)
-            }
-          ]);
+        const { error: userInsertError } = await supabase.from('users').insert([
+          {
+            id,
+            email,
+            name,
+            center,
+            team,
+            level: 1,
+            creat: new Date().toISOString(),
+            first: true,
+          },
+        ]);
         if (userInsertError) throw userInsertError;
       }
 
       if (window.showToast) {
         window.showToast('회원가입이 완료되었습니다. 로그인해주세요.', 'success');
       }
+
       navigate('/login');
     } catch (error) {
       console.error('Error signing up:', error);
@@ -147,15 +144,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (data: Partial<User>) => {
     try {
-      const { error } = await supabase
-        .from('users')
-        .update(data)
-        .eq('id', user?.id);
-
+      const { error } = await supabase.from('users').update(data).eq('id', user?.id);
       if (error) throw error;
 
-      setUser(prev => prev ? { ...prev, ...data } : null);
-      
+      setUser((prev) => (prev ? { ...prev, ...data } : null));
+
       if (window.showToast) {
         window.showToast('프로필이 업데이트되었습니다.', 'success');
       }
@@ -167,18 +160,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updatePassword = async (password: string) => {
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      });
-
+      const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
       await updateProfile({ first: false });
-      
+
       if (window.showToast) {
         window.showToast('비밀번호가 변경되었습니다.', 'success');
       }
-      
+
       navigate('/');
     } catch (error) {
       console.error('Error updating password:', error);
@@ -187,15 +177,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      signIn,
-      signUp,
-      signOut,
-      updateProfile,
-      updatePassword,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        updateProfile,
+        updatePassword,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
