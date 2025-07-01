@@ -40,7 +40,6 @@ const ProjectApproval = () => {
     setFeedback(e.target.value);
   };
 
-  // 승인
   const handleApprove = async () => {
     if (!id) return;
     setIsSubmitting(true);
@@ -64,7 +63,6 @@ const ProjectApproval = () => {
     }
   };
 
-  // 반려
   const handleReject = async () => {
     if (!id || !feedback.trim()) {
       if (window.showToast) {
@@ -141,23 +139,23 @@ const ProjectApproval = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-1">프로젝트 설명</h3>
-              <p className="text-gray-900">{project.description}</p>
+              <p className="text-gray-900">{project.description || '입력되지 않음'}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-1">구성원</h3>
-              <p className="text-gray-900">{project.members}</p>
+              <p className="text-gray-900">{project.members || '입력되지 않음'}</p>
             </div>
           </div>
           <div>
             <h3 className="text-sm font-medium text-gray-500 mb-1">주요내용 및 추진전략</h3>
             <div className="bg-gray-50 p-4 rounded-md text-gray-900">
-              {project.strategy}
+              {project.strategy || '입력되지 않음'}
             </div>
           </div>
           <div>
             <h3 className="text-sm font-medium text-gray-500 mb-1">성과평가 목표</h3>
             <div className="bg-gray-50 p-4 rounded-md text-gray-900">
-              {project.goal}
+              {project.goal || '입력되지 않음'}
             </div>
           </div>
           {project.notes && (
