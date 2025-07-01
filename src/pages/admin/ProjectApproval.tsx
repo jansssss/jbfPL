@@ -6,31 +6,42 @@ import Button from '../../components/ui/Button';
 import { SelectField, TextareaField } from '../../components/ui/FormField';
 import { ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
+import { supabase } from '../../lib/supabase';
 
 const ProjectApproval = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getProject, updateProject } = useProjects();
+  const { updateProject } = useProjects();
 
   const [project, setProject] = useState<any>(null);
   const [approvedLevel, setApprovedLevel] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ✅ 관리자용: Supabase에서 직접 프로젝트 로드
+  const fetchProject = async (projectId: string) => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .single();
+    if (error) {
+      console.error('프로젝트 조회 실패:', error);
+      if (window.showToast) {
+        window.showToast('프로젝트를 불러올 수 없습니다.', 'error');
+      }
+      navigate('/admin');
+    } else {
+      setProject(data);
+      setApprovedLevel(data.level);
+    }
+  };
+
   useEffect(() => {
     if (id) {
-      const projectData = getProject(id);
-      if (projectData) {
-        setProject(projectData);
-        setApprovedLevel(projectData.level);
-      } else {
-        if (window.showToast) {
-          window.showToast('프로젝트를 찾을 수 없습니다.', 'error');
-        }
-        navigate('/admin');
-      }
+      fetchProject(id);
     }
-  }, [id, getProject, navigate]);
+  }, [id]);
 
   const handleLevelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setApprovedLevel(e.target.value);
@@ -41,7 +52,7 @@ const ProjectApproval = () => {
   };
 
   const handleApprove = async () => {
-    if (!id) return;
+    if (!id || !project) return;
     setIsSubmitting(true);
     try {
       await updateProject(id, {
@@ -115,6 +126,11 @@ const ProjectApproval = () => {
     }
   };
 
+  const formatDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('ko-KR');
+  };
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-6">
@@ -134,7 +150,7 @@ const ProjectApproval = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
               <p className="text-sm text-gray-500 mt-1">
-                신청자: {project.applicant} | 신청일: {project.createdAt}
+                신청자: {project.applicant || '알 수 없음'} | 신청일: {formatDate(project.created_at)}
               </p>
             </div>
             <Badge variant={getLevelVariant(project.level)}>
@@ -211,7 +227,7 @@ const ProjectApproval = () => {
               variant="danger"
               onClick={handleReject}
               isLoading={isSubmitting && project.status === '거절됨'}
-              disabled={isSubmitting && project.status !== '거절됨'}
+              disabled={isSubmitting}
               icon={<XCircle className="h-4 w-4" />}
             >
               반려
@@ -220,7 +236,7 @@ const ProjectApproval = () => {
               variant="primary"
               onClick={handleApprove}
               isLoading={isSubmitting && project.status === '승인됨'}
-              disabled={isSubmitting && project.status !== '승인됨'}
+              disabled={isSubmitting}
               icon={<CheckCircle className="h-4 w-4" />}
             >
               승인
