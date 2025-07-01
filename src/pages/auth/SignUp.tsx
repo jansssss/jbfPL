@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import Card, { CardHeader, CardContent, CardFooter } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { UserPlus } from 'lucide-react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../../../lib/supabaseClient';
+
 
 const SignUp = () => {
   const navigate = useNavigate();
