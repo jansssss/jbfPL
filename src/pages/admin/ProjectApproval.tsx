@@ -48,6 +48,14 @@ const ProjectApproval = () => {
         status: '승인됨',
         level: approvedLevel,
         feedback: feedback || '승인되었습니다.',
+        description: project.description || null,
+        members: project.members || null,
+        strategy: project.strategy || null,
+        goal: project.goal || null,
+        notes: project.notes || null,
+        background: project.background || null,
+        contribution: project.contribution || null,
+        innovation: project.innovation || null,
       });
       if (window.showToast) {
         window.showToast('프로젝트가 성공적으로 승인되었습니다.', 'success');
