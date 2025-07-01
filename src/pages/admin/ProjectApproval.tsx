@@ -1,58 +1,34 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useProjects } from '../../contexts/ProjectContext';
-import Card, { CardHeader, CardContent, CardFooter } from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import { SelectField, TextareaField } from '../../components/ui/FormField';
-import { ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
-import Badge from '../../components/ui/Badge';
-import { supabase } from '../../lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
-const ProjectApproval = () => {
+const ProjectApproval: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { updateProject } = useProjects();
-
-  const [project, setProject] = useState<any>(null);
-  const [approvedLevel, setApprovedLevel] = useState('');
+  const { getProject, updateProject } = useProjects();
   const [feedback, setFeedback] = useState('');
+  const [approvedLevel, setApprovedLevel] = useState('S');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  // ✅ 관리자용: Supabase에서 직접 프로젝트 로드
-  const fetchProject = async (projectId: string) => {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .single();
-    if (error) {
-      console.error('프로젝트 조회 실패:', error);
-      if (window.showToast) {
-        window.showToast('프로젝트를 불러올 수 없습니다.', 'error');
-      }
-      navigate('/admin');
-    } else {
-      setProject(data);
-      setApprovedLevel(data.level);
-    }
-  };
+  const project = getProject(id || '');
 
   useEffect(() => {
-    if (id) {
-      fetchProject(id);
+    if (!project) return;
+    if (project.status === '승인됨' || project.status === '거절됨') {
+      setFeedback(project.feedback || '');
+      setApprovedLevel(project.level || 'S');
     }
-  }, [id]);
+  }, [project]);
 
-  const handleLevelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setApprovedLevel(e.target.value);
-  };
-
-  const handleFeedbackChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFeedback(e.target.value);
-  };
+  if (!project) {
+    return <div className="p-4">프로젝트를 찾을 수 없습니다.</div>;
+  }
 
   const handleApprove = async () => {
-    if (!id || !project) return;
+    if (!id) return;
     setIsSubmitting(true);
     try {
       await updateProject(id, {
@@ -64,9 +40,6 @@ const ProjectApproval = () => {
         strategy: project.strategy || null,
         goal: project.goal || null,
         notes: project.notes || null,
-        background: project.background || null,
-        contribution: project.contribution || null,
-        innovation: project.innovation || null,
       });
       if (window.showToast) {
         window.showToast('프로젝트가 성공적으로 승인되었습니다.', 'success');
@@ -83,17 +56,12 @@ const ProjectApproval = () => {
   };
 
   const handleReject = async () => {
-    if (!id || !feedback.trim()) {
-      if (window.showToast) {
-        window.showToast('반려 사유를 입력해 주세요.', 'error');
-      }
-      return;
-    }
+    if (!id) return;
     setIsSubmitting(true);
     try {
       await updateProject(id, {
         status: '거절됨',
-        feedback,
+        feedback: feedback || '보완 후 다시 신청해주세요.',
       });
       if (window.showToast) {
         window.showToast('프로젝트가 반려되었습니다.', 'info');
@@ -109,141 +77,63 @@ const ProjectApproval = () => {
     }
   };
 
-  if (!project) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-pulse text-gray-500">프로젝트 정보를 불러오는 중...</div>
-      </div>
-    );
-  }
-
-  const getLevelVariant = (level: string) => {
-    switch (level) {
-      case 'S': return 'info';
-      case 'A': return 'success';
-      case 'B': return 'default';
-      default: return 'default';
-    }
-  };
-
-  const formatDate = (isoDate: string) => {
-    const date = new Date(isoDate);
-    return date.toLocaleDateString('ko-KR');
-  };
-
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-6">
-        <Button
-          variant="outline"
-          size="sm"
-          icon={<ChevronLeft className="h-4 w-4" />}
-          onClick={() => navigate('/admin')}
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow">
+      <h1 className="text-2xl font-bold mb-4">프로젝트 승인 / 반려</h1>
+      <div className="mb-4">
+        <Label>프로젝트명</Label>
+        <div className="border p-2 rounded bg-gray-50">{project.name}</div>
+      </div>
+      <div className="mb-4">
+        <Label>프로젝트 설명</Label>
+        <div className="border p-2 rounded bg-gray-50 whitespace-pre-line">{project.description}</div>
+      </div>
+      <div className="mb-4">
+        <Label>프로젝트 전략</Label>
+        <div className="border p-2 rounded bg-gray-50">{project.strategy}</div>
+      </div>
+      <div className="mb-4">
+        <Label>참여자</Label>
+        <div className="border p-2 rounded bg-gray-50">{project.members}</div>
+      </div>
+      <div className="mb-4">
+        <Label>목표</Label>
+        <div className="border p-2 rounded bg-gray-50 whitespace-pre-line">{project.goal}</div>
+      </div>
+      <div className="mb-4">
+        <Label>비고</Label>
+        <div className="border p-2 rounded bg-gray-50">{project.notes}</div>
+      </div>
+      <div className="mb-4">
+        <Label htmlFor="level">등급 선택</Label>
+        <select
+          id="level"
+          value={approvedLevel}
+          onChange={(e) => setApprovedLevel(e.target.value)}
+          className="border rounded p-2 w-full"
         >
-          관리자 대시보드로 돌아가기
+          <option value="S">S</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+        </select>
+      </div>
+      <div className="mb-4">
+        <Label htmlFor="feedback">피드백</Label>
+        <Textarea
+          id="feedback"
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+          placeholder="검토 의견을 입력하세요."
+        />
+      </div>
+      <div className="flex justify-between mt-6">
+        <Button onClick={handleReject} disabled={isSubmitting} variant="outline">
+          반려하기
+        </Button>
+        <Button onClick={handleApprove} disabled={isSubmitting}>
+          승인하기
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                신청자: {project.applicant || '알 수 없음'} | 신청일: {formatDate(project.created_at)}
-              </p>
-            </div>
-            <Badge variant={getLevelVariant(project.level)}>
-              {project.level} 등급
-            </Badge>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">프로젝트 설명</h3>
-              <p className="text-gray-900">{project.description || '입력되지 않음'}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">구성원</h3>
-              <p className="text-gray-900">{project.members || '입력되지 않음'}</p>
-            </div>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">주요내용 및 추진전략</h3>
-            <div className="bg-gray-50 p-4 rounded-md text-gray-900">
-              {project.strategy || '입력되지 않음'}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">성과평가 목표</h3>
-            <div className="bg-gray-50 p-4 rounded-md text-gray-900">
-              {project.goal || '입력되지 않음'}
-            </div>
-          </div>
-          {project.notes && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">기타 요청사항</h3>
-              <div className="bg-gray-50 p-4 rounded-md text-gray-900">
-                {project.notes}
-              </div>
-            </div>
-          )}
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">승인 결정</h3>
-            <SelectField
-              label="승인 등급 조정"
-              name="level"
-              value={approvedLevel}
-              onChange={handleLevelChange}
-              description="프로젝트의 중요도와 규모에 따라 등급을 조정할 수 있습니다."
-            >
-              <option value="S">S 등급 (핵심 전략 프로젝트)</option>
-              <option value="A">A 등급 (주요 프로젝트)</option>
-              <option value="B">B 등급 (일반 프로젝트)</option>
-            </SelectField>
-            <TextareaField
-              label="피드백 또는 반려 사유"
-              name="feedback"
-              value={feedback}
-              onChange={handleFeedbackChange}
-              description="승인 시 특별한 메모나, 반려 시 반려 사유를 입력해 주세요."
-              rows={3}
-            />
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/admin')}
-            disabled={isSubmitting}
-          >
-            취소
-          </Button>
-          <div className="flex space-x-3">
-            <Button
-              variant="danger"
-              onClick={handleReject}
-              isLoading={isSubmitting && project.status === '거절됨'}
-              disabled={isSubmitting}
-              icon={<XCircle className="h-4 w-4" />}
-            >
-              반려
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleApprove}
-              isLoading={isSubmitting && project.status === '승인됨'}
-              disabled={isSubmitting}
-              icon={<CheckCircle className="h-4 w-4" />}
-            >
-              승인
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
     </div>
   );
 };
