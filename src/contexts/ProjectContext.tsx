@@ -2,10 +2,9 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
 
-// 실제 Project 타입 정의는 lib/supabase 혹은 여기에서 프로젝트 스키마와 일치하게 정의
 export interface Project {
   id: string;
-  no: number; // 👈 이 줄 추가! (no 컬럼이 숫자라면 number, 문자열이면 string
+  no: number; // 👈 프로젝트 고유 번호
   name: string;
   description: string;
   members: string;
@@ -14,7 +13,7 @@ export interface Project {
   level: string;
   notes: string;
   status: string;
-  feedback: string; // 👈 이 줄 추가!
+  feedback: string; // 👈 승인/반려 피드백
   applicant_id: string;
   created_at?: string;
   updated_at?: string;
@@ -41,7 +40,6 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   }, [user]);
 
-  // 프로젝트 전체 불러오기
   const fetchProjects = async () => {
     try {
       const { data, error } = await supabase
@@ -59,7 +57,6 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  // 프로젝트 추가 (user.id를 자동으로 applicant_id로 저장)
   const addProject = async (
     project: Omit<Project, 'id' | 'created_at' | 'applicant_id' | 'updated_at'>
   ) => {
@@ -70,7 +67,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
         .from('projects')
         .insert([{
           ...project,
-          applicant_id: user.id, // 🔥 로그인 유저 id 자동입력
+          applicant_id: user.id, // 로그인 사용자 ID 저장
         }])
         .select()
         .single();
@@ -83,15 +80,14 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  // 프로젝트 수정
   const updateProject = async (id: string, updates: Partial<Project>) => {
     try {
       const { data, error } = await supabase
         .from('projects')
         .update(updates)
-        .eq('id', id)
+        .eq('id', id) // 👈 사용자 ID 제한 없이 업데이트
         .select()
-        .single();
+        .single(); // 👈 여러 행이 반환될 수 없도록 강제
 
       if (error) throw error;
 
@@ -106,17 +102,14 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  // 단일 프로젝트 조회
   const getProject = (id: string) => {
     return projects.find((p) => p.id === id);
   };
 
-  // 유저별 프로젝트 목록
   const getUserProjects = (userId: string) => {
     return projects.filter((p) => p.applicant_id === userId);
   };
 
-  // 대기중 프로젝트
   const getPendingProjects = () => {
     return projects.filter((p) => p.status === '대기중');
   };
