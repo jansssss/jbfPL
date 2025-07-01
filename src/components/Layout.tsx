@@ -76,7 +76,9 @@ const Layout = () => {
                   </Link>
                 )
               )}
-              <span className="font-semibold mr-2">{user?.name} 님</span>
+              
+              <span className="font-semibold mr-2">  {user?.center} {user?.team} {user?.name} 님</span>
+
               <button
                 onClick={handleSignOut}
                 className="bg-blue-600 text-white px-3 py-2 rounded-md font-bold hover:bg-blue-700 ml-1"
