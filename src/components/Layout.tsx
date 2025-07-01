@@ -1,12 +1,11 @@
 import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
-import { 
-  ClipboardList, 
-  LayoutDashboard, 
-  LogOut, 
-  Settings, 
+import {
+  ClipboardList,
+  LayoutDashboard,
+  LogOut,
   User,
   Users,
-  Menu, 
+  Menu,
   X,
   FilePlus
 } from 'lucide-react';
@@ -18,10 +17,11 @@ import UserProfile from './UserProfile';
 const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth(); // ✅ loading 추가
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const isAdminPath = location.pathname.startsWith('/admin');
+  const canAccessAdmin = user?.level === 3;
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -38,9 +38,6 @@ const Layout = () => {
     }
   };
 
-  // ✅ "관리자전환" 버튼은 level === 3인 경우만 노출
-  const canAccessAdmin = user?.level === 3;
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
@@ -48,8 +45,8 @@ const Layout = () => {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link 
-                  to={isAdminPath ? "/admin" : "/"} 
+                <Link
+                  to={isAdminPath ? '/admin' : '/'}
                   className="text-blue-600 font-semibold text-lg flex items-center gap-2"
                 >
                   <ClipboardList className="h-6 w-6" />
@@ -57,27 +54,31 @@ const Layout = () => {
                 </Link>
               </div>
             </div>
-            
+
             <nav className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
               {canAccessAdmin && (
                 isAdminPath ? (
-                  <Link 
-                    to="/" 
+                  <Link
+                    to="/"
                     className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                   >
                     직원 모드로 전환
                   </Link>
                 ) : (
-                  <Link 
-                    to="/admin" 
+                  <Link
+                    to="/admin"
                     className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                   >
                     관리자 모드로 전환
                   </Link>
                 )
               )}
-              
-              <span className="font-semibold mr-2">  {user?.center} {user?.team} {user?.name} 님</span>
+
+              {!loading && user && (
+                <span className="font-semibold mr-2">
+                  {user.center} {user.team} {user.name} 님
+                </span>
+              )}
 
               <button
                 onClick={handleSignOut}
@@ -86,36 +87,32 @@ const Layout = () => {
                 로그아웃
               </button>
             </nav>
-            
+
             <div className="flex items-center sm:hidden">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-blue-600 hover:bg-gray-100 focus:outline-none"
               >
-                {isMobileMenuOpen ? (
-                  <X className="block h-6 w-6" />
-                ) : (
-                  <Menu className="block h-6 w-6" />
-                )}
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             </div>
           </div>
         </div>
-        
+
         {isMobileMenuOpen && (
           <div className="sm:hidden">
             <div className="pt-2 pb-3 space-y-1">
               {canAccessAdmin && (
                 isAdminPath ? (
-                  <Link 
-                    to="/" 
+                  <Link
+                    to="/"
                     className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
                   >
                     직원 모드로 전환
                   </Link>
                 ) : (
-                  <Link 
-                    to="/admin" 
+                  <Link
+                    to="/admin"
                     className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
                   >
                     관리자 모드로 전환
@@ -157,7 +154,7 @@ const Layout = () => {
           </div>
         )}
       </header>
-      
+
       <div className="flex flex-1">
         <aside className="hidden sm:flex w-64 flex-col fixed inset-y-0 pt-16 bg-white border-r border-gray-200">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
