@@ -80,14 +80,15 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
- const updateProject = async (id: string, updates: Partial<Project>) => {
+const updateProject = async (id: string, updates: Partial<Project>) => {
   try {
     const { data, error } = await supabase
       .from('projects')
       .update(updates)
-      .eq('id', id)               // ✅ applicant_id 조건 제거
+      .eq('id', id)
+      .limit(1)       // ✅ 복수 업데이트 방지
       .select()
-      .maybeSingle();             // ✅ 여러 건 반환 방지
+      .single();      // ✅ 1건만 반환하게
 
     if (error) throw error;
 
