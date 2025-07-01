@@ -110,12 +110,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .from('users')
           .insert([
             {
-              id,
-              email,
-              name,
-              level: 1,                         // 기본 권한
-              creat: new Date().toISOString(),  // 생성일시(ISO)
-              first: true,                      // 첫 로그인 여부(기본 true)
+         id: userId,
+         email,
+         name,
+         center,
+         team,
+         level: 1,
+         creat: new Date().toISOString(),
+         first: true,                   // 첫 로그인 여부(기본 true)
             }
           ]);
         if (userInsertError) throw userInsertError;
