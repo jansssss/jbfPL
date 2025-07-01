@@ -87,7 +87,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
         .update(updates)
         .eq('id', id) // 👈 사용자 ID 제한 없이 업데이트
         .select()
-        .single(); // 👈 여러 행이 반환될 수 없도록 강제
+        .maybeSingle(); // 🔁 .single() → .maybeSingle()
 
       if (error) throw error;
 
