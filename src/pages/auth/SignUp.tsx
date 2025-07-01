@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Card, { CardHeader, CardContent, CardFooter } from '../../components/ui/Card';
-import { InputField, SelectField } from '../../components/ui/FormField';
 import Button from '../../components/ui/Button';
 import { UserPlus } from 'lucide-react';
 
@@ -84,62 +83,88 @@ const SignUp = () => {
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded" role="alert">{error}</div>
             )}
 
-            <SelectField
-              label="소속(본부)"
-              value={center}
-              onChange={(e) => { setCenter(e.target.value); setTeam(''); }}
-              options={Object.keys(centers).map((c) => ({ label: c, value: c }))}
-              required
-            />
+            <div>
+              <label className="block font-medium text-gray-700 mb-1">소속(본부)</label>
+              <select
+                value={center}
+                onChange={(e) => { setCenter(e.target.value); setTeam(''); }}
+                required
+                className="w-full border border-gray-300 rounded-md p-2"
+              >
+                <option value="">선택하세요</option>
+                {Object.keys(centers).map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
 
             {center && centers[center].length > 0 && (
-              <SelectField
-                label="부서(실/센터)"
-                value={team}
-                onChange={(e) => setTeam(e.target.value)}
-                options={centers[center].map((t) => ({ label: t, value: t }))}
-                required
-              />
+              <div>
+                <label className="block font-medium text-gray-700 mb-1">부서(실/센터)</label>
+                <select
+                  value={team}
+                  onChange={(e) => setTeam(e.target.value)}
+                  required
+                  className="w-full border border-gray-300 rounded-md p-2"
+                >
+                  <option value="">선택하세요</option>
+                  {centers[center].map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
             )}
 
-            <InputField
-              label="아이디"
-              type="text"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              required
-              autoComplete="username"
-              description="영문자와 숫자만 사용 가능합니다. @jbf.kr이 자동으로 추가됩니다."
-            />
-            {userId && (
-              <p className="mt-1 text-sm text-gray-500">이메일: {userId}@jbf.kr</p>
-            )}
-            <InputField
-              label="이름"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              autoComplete="name"
-              description="실명을 입력하세요."
-            />
-            <InputField
-              label="비밀번호"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-              description="최소 6자 이상 입력해주세요."
-            />
-            <InputField
-              label="비밀번호 확인"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-            />
+            <div>
+              <label className="block font-medium text-gray-700 mb-1">아이디</label>
+              <input
+                type="text"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                required
+                className="w-full border border-gray-300 rounded-md p-2"
+                placeholder="영문자와 숫자만 입력하세요"
+              />
+              {userId && (
+                <p className="mt-1 text-sm text-gray-500">이메일: {userId}@jbf.kr</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block font-medium text-gray-700 mb-1">이름</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full border border-gray-300 rounded-md p-2"
+                placeholder="실명을 입력하세요"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium text-gray-700 mb-1">비밀번호</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full border border-gray-300 rounded-md p-2"
+                placeholder="최소 6자 이상 입력해주세요"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium text-gray-700 mb-1">비밀번호 확인</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full border border-gray-300 rounded-md p-2"
+              />
+            </div>
+
             <Button
               type="submit"
               variant="primary"
