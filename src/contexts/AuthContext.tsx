@@ -55,12 +55,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('*')
+        .select('id, email, name, level, center, team, creat, first')
         .eq('id', userId)
         .single();
 
       if (error) throw error;
-      setUser(data);
+
+      setUser({
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        level: data.level,
+        center: data.center,
+        team: data.team,
+        creat: data.creat,
+        first: data.first,
+      });
     } catch (error) {
       console.error('Error fetching user:', error);
     } finally {
@@ -76,13 +86,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (data.user) {
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('*')
+          .select('id, email, name, level, center, team, creat, first')
           .eq('id', data.user.id)
           .single();
 
         if (userError) throw userError;
 
-        setUser(userData);
+        setUser({
+          id: userData.id,
+          email: userData.email,
+          name: userData.name,
+          level: userData.level,
+          center: userData.center,
+          team: userData.team,
+          creat: userData.creat,
+          first: userData.first,
+        });
         navigate('/');
       }
     } catch (error) {
