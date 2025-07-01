@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 export interface Project {
   id: string;
-  no: number; // 👈 프로젝트 고유 번호
+  no: number;
   name: string;
   description: string;
   members: string;
@@ -13,7 +13,7 @@ export interface Project {
   level: string;
   notes: string;
   status: string;
-  feedback: string; // 👈 승인/반려 피드백
+  feedback: string;
   applicant_id: string;
   created_at?: string;
   updated_at?: string;
@@ -23,7 +23,7 @@ interface ProjectContextType {
   projects: Project[];
   addProject: (project: Omit<Project, 'id' | 'created_at' | 'applicant_id' | 'updated_at'>) => Promise<void>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
-  getProject: (id: string) => Project | undefined;
+  getProject: (id: string) => Promise<Project | undefined>; // ✅ 반환 타입 변경 (비동기화)
   getUserProjects: (userId: string) => Project[];
   getPendingProjects: () => Project[];
 }
@@ -42,10 +42,17 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const fetchProjects = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // ✅ 관리자면 전체 조회, 아니면 본인 프로젝트만
+      if (user?.level < 3) {
+        query = query.eq('applicant_id', user.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setProjects(data || []);
@@ -65,10 +72,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       const { data, error } = await supabase
         .from('projects')
-        .insert([{
-          ...project,
-          applicant_id: user.id, // 로그인 사용자 ID 저장
-        }])
+        .insert([{ ...project, applicant_id: user.id }])
         .select()
         .single();
 
@@ -85,16 +89,14 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       const { data, error } = await supabase
         .from('projects')
         .update(updates)
-        .eq('id', id) // 👈 사용자 ID 제한 없이 업데이트
+        .eq('id', id)
         .select()
-        .maybeSingle(); // 🔁 .single() → .maybeSingle()
+        .maybeSingle(); // ✅ 여러 조건에 대응
 
       if (error) throw error;
 
       setProjects(prev =>
-        prev.map(project =>
-          project.id === id ? { ...project, ...data } : project
-        )
+        prev.map(project => (project.id === id ? { ...project, ...data } : project))
       );
     } catch (error) {
       console.error('Error updating project:', error);
@@ -102,8 +104,23 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const getProject = (id: string) => {
-    return projects.find((p) => p.id === id);
+  // ✅ local에 없으면 Supabase에서 직접 조회
+  const getProject = async (id: string): Promise<Project | undefined> => {
+    const local = projects.find(p => p.id === id);
+    if (local) return local;
+
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Supabase getProject error:', error);
+      return undefined;
+    }
+
+    return data || undefined;
   };
 
   const getUserProjects = (userId: string) => {
