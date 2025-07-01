@@ -4,9 +4,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import Card, { CardHeader, CardContent, CardFooter } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { UserPlus } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
 
 const SignUp = () => {
-  const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const centers = {
@@ -57,7 +57,27 @@ const SignUp = () => {
     const email = `${userId}@jbf.kr`;
     setLoading(true);
     try {
-      await signUp(email, password, name, center, team);
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      if (signUpError) throw signUpError;
+
+      const userId = data.user?.id;
+      const { error: insertError } = await supabase.from('users').insert({
+        id: userId,
+        email,
+        name,
+        level: 1,
+        creat: new Date().toISOString(),
+        first: true,
+        center,
+        team
+      });
+
+      if (insertError) throw insertError;
+
       if (window.showToast) {
         window.showToast('회원가입이 완료되었습니다. 로그인해주세요.', 'success');
       }
