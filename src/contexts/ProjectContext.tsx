@@ -80,29 +80,32 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-const updateProject = async (id: string, updates: Partial<Project>) => {
-  try {
-    const { data, error } = await supabase
-      .from('projects')
-      .update(updates)
-      .eq('id', id)
-      .limit(1)       // ✅ 복수 업데이트 방지
-      .select()
-      .single();      // ✅ 1건만 반환하게
+  const updateProject = async (id: string, updates: Partial<Project>) => {
+    if (!user) throw new Error('User not authenticated');
 
-    if (error) throw error;
+    try {
+      const isAdmin = Number(user.level) >= 3;
 
-    setProjects(prev =>
-      prev.map(project =>
-        project.id === id ? { ...project, ...data } : project
-      )
-    );
-  } catch (error) {
-    console.error('Error updating project:', error);
-    throw error;
-  }
-};
+      const query = supabase
+        .from('projects')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .maybeSingle(); // ✅ 다중 행 방지
 
+      const { data, error } = await query;
+      if (error) throw error;
+
+      setProjects(prev =>
+        prev.map(project =>
+          project.id === id ? { ...project, ...data } : project
+        )
+      );
+    } catch (error) {
+      console.error('Error updating project:', error);
+      throw error;
+    }
+  };
 
   const getProject = (id: string) => {
     return projects.find((p) => p.id === id);
