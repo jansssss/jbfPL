@@ -91,7 +91,7 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
         .update(updates)
         .eq('id', id)
         .select()
-        .maybeSingle(); // ✅ 여러 조건에 대응
+        .single(); // 
 
       if (error) throw error;
 
