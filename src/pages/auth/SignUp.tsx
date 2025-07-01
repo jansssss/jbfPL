@@ -2,22 +2,37 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Card, { CardHeader, CardContent, CardFooter } from '../../components/ui/Card';
-import { InputField } from '../../components/ui/FormField';
+import { InputField, SelectField } from '../../components/ui/FormField';
 import Button from '../../components/ui/Button';
 import { UserPlus } from 'lucide-react';
 
 const SignUp = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
+
+  const centers = {
+    '경영기획본부': ['전략기획실', '경영혁신실'],
+    '바이오의약본부': ['첨단바이오연구실', '스마트품질관리실', '바이오의약생산센터', '세포치료생산센터', '바이오의약본부지원실'],
+    '그린바이오본부': ['천연자원연구실', 'AI융합지원실', '천연센터', '식품센터', '친환경센터', '나노센터'],
+    '해양바이오본부': ['해양융합연구실', '해양테크센터', '해양바이오지원실'],
+    '감사실': ['감사실']
+  };
+
+  const [center, setCenter] = useState('');
+  const [team, setTeam] = useState('');
   const [userId, setUserId] = useState('');
-  const [name, setName] = useState('');            // 👈 이름 상태 추가
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const validateForm = () => {
-    if (!userId || !name || !password || !confirmPassword) { // 👈 이름도 체크
+    if (!center || (centers[center]?.length && !team)) {
+      setError('소속과 부서를 선택해주세요.');
+      return false;
+    }
+    if (!userId || !name || !password || !confirmPassword) {
       setError('모든 필드를 입력해주세요.');
       return false;
     }
@@ -36,19 +51,14 @@ const SignUp = () => {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
     if (!validateForm()) return;
-
     const email = `${userId}@jbf.kr`;
     setLoading(true);
-
     try {
-      // ⭐ 이름(name)까지 signUp에 전달
-      await signUp(email, password, name);
-
+      await signUp(email, password, name, center, team);
       if (window.showToast) {
         window.showToast('회원가입이 완료되었습니다. 로그인해주세요.', 'success');
       }
@@ -66,20 +76,32 @@ const SignUp = () => {
       <Card className="max-w-md w-full">
         <CardHeader>
           <h2 className="text-center text-3xl font-bold text-gray-900">회원가입</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            jBF 프로젝트 관리 시스템
-          </p>
+          <p className="mt-2 text-center text-sm text-gray-600">jBF 프로젝트 관리 시스템</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div
-                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded"
-                role="alert"
-              >
-                {error}
-              </div>
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded" role="alert">{error}</div>
             )}
+
+            <SelectField
+              label="소속(본부)"
+              value={center}
+              onChange={(e) => { setCenter(e.target.value); setTeam(''); }}
+              options={Object.keys(centers).map((c) => ({ label: c, value: c }))}
+              required
+            />
+
+            {center && centers[center].length > 0 && (
+              <SelectField
+                label="부서(실/센터)"
+                value={team}
+                onChange={(e) => setTeam(e.target.value)}
+                options={centers[center].map((t) => ({ label: t, value: t }))}
+                required
+              />
+            )}
+
             <InputField
               label="아이디"
               type="text"
@@ -90,9 +112,7 @@ const SignUp = () => {
               description="영문자와 숫자만 사용 가능합니다. @jbf.kr이 자동으로 추가됩니다."
             />
             {userId && (
-              <p className="mt-1 text-sm text-gray-500">
-                이메일: {userId}@jbf.kr
-              </p>
+              <p className="mt-1 text-sm text-gray-500">이메일: {userId}@jbf.kr</p>
             )}
             <InputField
               label="이름"
@@ -134,9 +154,7 @@ const SignUp = () => {
         <CardFooter className="text-center">
           <p className="text-sm text-gray-600">
             이미 계정이 있으신가요?{' '}
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-              로그인
-            </Link>
+            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">로그인</Link>
           </p>
         </CardFooter>
       </Card>
