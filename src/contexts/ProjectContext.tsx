@@ -80,27 +80,28 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const updateProject = async (id: string, updates: Partial<Project>) => {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .update(updates)
-        .eq('id', id)
-        .select('*')   // 👈 필드 명시
-        .single();     // 👈 단일 행 반환
+ const updateProject = async (id: string, updates: Partial<Project>) => {
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .update(updates)
+      .eq('id', id)               // ✅ applicant_id 조건 제거
+      .select()
+      .maybeSingle();             // ✅ 여러 건 반환 방지
 
-      if (error) throw error;
+    if (error) throw error;
 
-      setProjects(prev =>
-        prev.map(project =>
-          project.id === id ? { ...project, ...data } : project
-        )
-      );
-    } catch (error) {
-      console.error('Error updating project:', error);
-      throw error;
-    }
-  };
+    setProjects(prev =>
+      prev.map(project =>
+        project.id === id ? { ...project, ...data } : project
+      )
+    );
+  } catch (error) {
+    console.error('Error updating project:', error);
+    throw error;
+  }
+};
+
 
   const getProject = (id: string) => {
     return projects.find((p) => p.id === id);
